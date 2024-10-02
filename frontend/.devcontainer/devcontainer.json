@@ -1,0 +1,14 @@
+{
+    "name": "F1 Dashboard Frontend",
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "frontend",
+    "workspaceFolder": "/app",
+    "extensions": [
+        "dbaeumer.vscode-eslint",
+        "octref.vetur"
+    ],
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+    },
+    "postCreateCommand": "npm install"
+}

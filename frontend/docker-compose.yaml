@@ -1,0 +1,19 @@
+version: '3'
+services:
+  frontend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: f1-dashboard-frontend
+    container_name: f1-dashboard-vue
+    ports:
+      - "8081:8081"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - f1-dashboard
+
+networks:
+  f1-dashboard:
+    driver: bridge
