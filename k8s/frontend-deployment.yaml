@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: f1-dashboard-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: f1-dashboard-frontend
+  template:
+    metadata:
+      labels:
+        app: f1-dashboard-frontend
+    spec:
+      containers:
+      - name: f1-dashboard-frontend
+        image: f1-dashboard-frontend:latest
+        ports:
+        - containerPort: 8081
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: f1-dashboard-frontend
+spec:
+  selector:
+    app: f1-dashboard-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8081
