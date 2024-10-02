@@ -1,0 +1,75 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: f1
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=30s
+          --health-timeout=5s
+          --health-retries=3
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, mysqli, gd
+        ini-values: post_max_size=256M, upload_max_filesize=256M
+        coverage: none
+    
+    - name: Install Dependencies
+      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+      working-directory: ./backend
+    
+    - name: Execute tests via PHPUnit
+      run: vendor/bin/phpunit tests/Feature
+      working-directory: ./backend
+
+    - name: Build Frontend
+      working-directory: ./frontend
+      run: |
+        npm install
+        npm run build
+    
+    - name: Build Backend Docker Container
+      working-directory: ./backend
+      run: docker-compose up --build -d
+    
+    - name: Build Frontend Docker Container
+      working-directory: ./frontend
+      run: docker-compose up --build -d
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v1
+    
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl apply -f k8s/
+      env:
+        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
