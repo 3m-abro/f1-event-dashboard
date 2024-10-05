@@ -16,14 +16,4 @@ class F1Service {
         $response = Http::get("{$this->baseUrl}/current/constructorStandings.json");
         return $response->json();
     }
-
-    public function getLiveRaceUpdates() {
-        // Simulate real-time updates with random mock data for now
-        return [
-            'lap' => rand(1, 70),
-            'leadDriver' => 'Max Verstappen',
-            'status' => 'Race in Progress',
-            'time' => now()->toTimeString(),
-        ];
-    }
 }

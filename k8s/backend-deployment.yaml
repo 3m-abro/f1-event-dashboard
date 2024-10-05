@@ -1,46 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: f1-dashboard-backend
+  name: f1-php-backend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: f1-dashboard-backend
+      app: f1-php-backend
   template:
     metadata:
       labels:
-        app: f1-dashboard-backend
+        app: f1-php-backend
     spec:
       containers:
-      - name: f1-dashboard-backend
-        image: f1-dashboard-backend:latest
-        ports:
-        - containerPort: 8000
-        env:
-        - name: DB_HOST
-          value: mysql
-        - name: DB_DATABASE
-          value: f1_dashboard
-        - name: DB_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: username
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mysql-secret
-              key: password
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: f1-dashboard-backend
-spec:
-  selector:
-    app: f1-dashboard-backend
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 8000
+        - name: f1-php-backend
+          image: f1-php-backend
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 9000
+          env:
+            - name: APP_ENV
+              value: production
+            - name: APP_DEBUG
+              value: "false"
+            - name: APP_URL
+              value: https://f1-backend.local

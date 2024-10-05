@@ -73,8 +73,18 @@ jobs:
     - name: Set up kubectl
       uses: azure/setup-kubectl@v1
     
+    - name: Configure kubectl
+      run: |
+        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig
+        chmod 600 kubeconfig
+        export KUBECONFIG=./kubeconfig
+
     - name: Deploy to Kubernetes
       run: |
-        kubectl apply -f k8s/
+        kubectl apply -f k8s/ --validate=false
       env:
-        KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        KUBECONFIG: ./kubeconfig
+    
+    - name: Clean up kubeconfig
+      run: rm -f kubeconfig
+      if: always()

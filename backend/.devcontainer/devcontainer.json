@@ -12,7 +12,7 @@
         "mikestead.dotenv",
         "calebporzio.better-phpunit"
     ],
-    "forwardPorts": [8000, 3309],
+    "forwardPorts": [9000, 3309],
     "postCreateCommand": "composer install && php artisan key:generate && php artisan migrate",
     "remoteUser": "dev"
 }

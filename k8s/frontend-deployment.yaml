@@ -1,31 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: f1-dashboard-frontend
+  name: f1-vue-frontend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: f1-dashboard-frontend
+      app: f1-vue-frontend
   template:
     metadata:
       labels:
-        app: f1-dashboard-frontend
+        app: f1-vue-frontend
     spec:
       containers:
-      - name: f1-dashboard-frontend
-        image: f1-dashboard-frontend:latest
-        ports:
-        - containerPort: 8081
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: f1-dashboard-frontend
-spec:
-  selector:
-    app: f1-dashboard-frontend
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 8081
+        - name: f1-vue-frontend
+          image: f1-vue-frontend
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8081
+          env:
+            - name: VUE_APP_API_URL
+              value: https://f1-backend.local/api

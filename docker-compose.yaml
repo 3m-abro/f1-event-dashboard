@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend  # Path to the PHP backend
+    container_name: f1-php-backend
+    image: f1-php-backend
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=https://f1-backend.local
+    ports:
+      - "9000:9000"  # Expose port 9000
+
+  frontend:
+    build:
+      context: ./frontend  # Path to the Vue.js frontend
+    container_name: f1-vue-frontend
+    image: f1-vue-frontend
+    depends_on:
+      - backend  # Wait for the backend service to be ready before starting the frontend service
+    environment: 
+      - VUE_APP_API_URL=https://f1-backend.local/api  # Define the API URL for the backend service
+    ports:
+      - "8081:8081"  # Expose port 8081

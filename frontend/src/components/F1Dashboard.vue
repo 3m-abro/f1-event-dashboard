@@ -1,35 +1,63 @@
 <template>
   <div class="container mt-5">
-    <h2>Formula 1 Event Dashboard</h2>
+    <h1 class="text-center mb-4">Formula 1 Event Dashboard</h1>
+    
+    <div class="row">
+      <div class="col-6">
+        <!-- Event Schedule Section -->
+        <div class="card mb-4">
+          <div class="card-header">Event Schedule</div>
+          <div class="card-body">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th scope="col">Race</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Location</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="schedule in schedules" :key="schedule.id">
+                  <td>{{ schedule.raceName }}</td>
+                  <td>{{ schedule.date }}</td>
+                  <td>{{ schedule.Circuit.circuitName }}, {{ schedule.Circuit.Location.locality }}, {{ schedule.Circuit.Location.country }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
-    <!-- Schedules Section -->
-    <div class="mt-4">
-      <h4>Event Schedules</h4>
-      <ul class="list-group">
-        <li class="list-group-item" v-for="(schedule, index) in schedules" :key="index">
-          {{ schedule.race }} - {{ schedule.date }}
-        </li>
-      </ul>
-    </div>
+      <div class="col-6">
+        <!-- Team Standings Section -->
+        <div class="card mb-4">
+          <div class="card-header">Team Standings</div>
+          <div class="card-body">
+            <ul class="list-group">
+              <li v-for="standing in standings" :key="standing.id" class="list-group-item">
+                {{ standing.Constructor.name }} - Points: {{ standing.points }}
+              </li>
+            </ul>
+          </div>
+        </div>
 
-    <!-- Team Standings Section -->
-    <div class="mt-4">
-      <h4>Team Standings</h4>
-      <ul class="list-group">
-        <li class="list-group-item" v-for="(team, index) in standings" :key="index">
-          {{ team.team }} - {{ team.points }} Points
-        </li>
-      </ul>
-    </div>
-
-    <!-- Live Race Updates Section -->
-    <div class="mt-4">
-      <h4>Live Race Updates</h4>
-      <ul class="list-group">
-        <li class="list-group-item" v-for="(update, index) in liveUpdates" :key="index">
-          {{ update }}
-        </li>
-      </ul>
+        <!-- Live Race Updates Section -->
+        <div class="card mb-4">
+          <div class="card-header">Live Race Updates</div>
+          <div class="card-body">
+            <div v-if="raceData">
+              <p><strong>Lap:</strong> {{ raceData.lap }}</p>
+              <p><strong>Lead Driver:</strong> {{ raceData.leadDriver }}</p>
+              <p><strong>Status:</strong> {{ raceData.status }}</p>
+              <p><strong>Time:</strong> {{ raceData.time }}</p>
+            </div>
+            <div v-else>
+              <p>No updates received yet...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
     </div>
   </div>
 </template>
@@ -37,23 +65,31 @@
 <script>
 import axios from 'axios';
 
+const API_URL = process.env.VUE_APP_API_URL;  // Point to Laravel backend
+
 export default {
   data() {
     return {
       schedules: [],
       standings: [],
-      liveUpdates: []
+      liveUpdates: [],
+      raceData: null,
+      eventSource: null
     };
   },
   mounted() {
+    document.title = process.env.VUE_APP_TITLE;
     // Fetch schedules and standings on component mount
     this.getSchedules();
     this.getStandings();
-    this.getLiveUpdates();
+    this.setupLiveUpdates();
+  },
+  beforeUnmount() {
+    this.closeLiveUpdates();
   },
   methods: {
     getSchedules() {
-      axios.get('http://localhost:8000/api/f1/schedules')
+      axios.get(`${API_URL}/schedule`)
         .then(response => {
           if (response.data.MRData && response.data.MRData.RaceTable) {
             this.schedules = response.data.MRData.RaceTable.Races;
@@ -66,7 +102,7 @@ export default {
         });
     },
     getStandings() {
-      axios.get('http://localhost:8000/api/f1/standings')
+      axios.get(`${API_URL}/standings`)
         .then(response => {
           if (response.data.MRData && response.data.MRData.StandingsTable) {
             this.standings = response.data.MRData.StandingsTable.StandingsLists[0].ConstructorStandings;
@@ -78,15 +114,33 @@ export default {
           console.error('Error fetching standings:', error);
         });
     },
-    getLiveUpdates() {
-      const eventSource = new EventSource('http://localhost:8000/api/f1/live-updates');
-      eventSource.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        this.liveUpdates.push(data.update);
+    setupLiveUpdates() {
+      this.closeLiveUpdates(); // Close any existing connection
+      
+      this.eventSource = new EventSource(`${API_URL}/live`);
+
+      this.eventSource.addEventListener("raceUpdate", (event) => {
+        this.raceData = JSON.parse(event.data);
+      });
+
+      this.eventSource.onerror = (error) => {
+        console.error("Error in SSE connection:", error);
+        this.eventSource.close();
+        
+        // Attempt to reconnect after 5 seconds
+        setTimeout(() => this.setupLiveUpdates(), 5000);
       };
-      eventSource.onerror = (error) => {
-        console.error('Error with live updates:', error);
+
+      this.eventSource.onopen = () => {
+        console.log("SSE connection established");
       };
+    },
+
+    closeLiveUpdates() {
+      if (this.eventSource) {
+        this.eventSource.close();
+        this.eventSource = null;
+      }
     }
   }
 };
