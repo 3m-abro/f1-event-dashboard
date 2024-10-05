@@ -68,22 +68,27 @@ jobs:
     if: github.ref == 'refs/heads/main'
     
     steps:
-    - uses: actions/checkout@v2
-    
-    - name: Set up kubectl
-      uses: azure/setup-kubectl@v1
-    
-    - name: Configure kubectl
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install kubectl
       run: |
-        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig
-        chmod 600 kubeconfig
-        export KUBECONFIG=./kubeconfig
+        curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x ./kubectl
+        sudo mv ./kubectl /usr/local/bin/kubectl
+
+    - name: Start Minikube
+      run: |
+        curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+        sudo install minikube-linux-amd64 /usr/local/bin/minikube
+        sudo minikube start --driver=docker
+        
+    - name: Set up KUBECONFIG
+      run: echo "::set-env name=KUBECONFIG::$(minikube kubeconfig)"
 
     - name: Deploy to Kubernetes
       run: |
-        kubectl apply -f k8s/ --validate=false
-      env:
-        KUBECONFIG: ./kubeconfig
+        kubectl apply -f deployment.yaml
     
     - name: Clean up kubeconfig
       run: rm -f kubeconfig
