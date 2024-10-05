@@ -77,12 +77,17 @@ jobs:
         chmod +x ./kubectl
         sudo mv ./kubectl /usr/local/bin/kubectl
 
-    - name: Start Minikube
+    - name: Install Minikube
       run: |
         curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
         sudo install minikube-linux-amd64 /usr/local/bin/minikube
-        sudo minikube start --driver=docker
-        
+
+    - name: Start Minikube as non-root user
+      run: |
+        sudo chown -R $USER:$USER $HOME/.kube $HOME/.minikube
+        mkdir -p $HOME/.kube $HOME/.minikube
+        minikube start --driver=docker
+
     - name: Set up KUBECONFIG
       run: echo "::set-env name=KUBECONFIG::$(minikube kubeconfig)"
 
