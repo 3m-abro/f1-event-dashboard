@@ -91,7 +91,10 @@ jobs:
 
     - name: Deploy to Kubernetes
       run: |
-        kubectl apply -f deployment.yaml
+        # Apply backend deployment
+        kubectl apply -f k8s/backend-deployment.yaml
+        # Apply frontend deployment
+        kubectl apply -f k8s/frontend-deployment.yaml
     
     - name: Clean up kubeconfig
       run: rm -f kubeconfig
