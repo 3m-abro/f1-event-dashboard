@@ -87,7 +87,7 @@ jobs:
         minikube start --driver=docker
 
     - name: Set up KUBECONFIG
-      run: echo "::set-env name=KUBECONFIG::$(minikube kubeconfig)"
+      run: echo "KUBECONFIG=$(minikube kubeconfig)" >> $GITHUB_ENV
 
     - name: Deploy to Kubernetes
       run: |
