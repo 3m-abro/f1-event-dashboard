@@ -84,8 +84,6 @@ jobs:
 
     - name: Start Minikube as non-root user
       run: |
-        sudo chown -R $USER:$USER $HOME/.kube $HOME/.minikube
-        mkdir -p $HOME/.kube $HOME/.minikube
         minikube start --driver=docker
 
     - name: Set up KUBECONFIG
