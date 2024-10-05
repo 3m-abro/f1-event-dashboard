@@ -70,9 +70,29 @@ The project is structured as follows:
    kubectl apply -f k8s/
    ```
 
-3. Get the application URL:
+3. Enable Ingress in Minikube:
    ```
-   minikube service frontend-service --url
+   minikube addons enable ingress
+   ```
+
+4. Update Hosts with Virtual Domains:
+   ```
+   sudo nano /etc/hosts
+
+   // Add following in the hosts file
+   127.0.0.1   f1-dashboard.local
+   127.0.0.1   f1-backend.local
+   ```
+   
+5. Start Minikube Tunnel to access Virtual Domains:
+   ```
+   minikube tunnel
+   ```
+
+6. Start Minikube Dashboard (Optional):
+   ```
+   // Start Minikube Dashboard to view Kubernetes Panel for pods and services. P.S. Use a new terminal.
+   minikube tunnel
    ```
 
 ## API Endpoints
