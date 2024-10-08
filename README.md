@@ -10,7 +10,6 @@ The project is structured as follows:
 
 - Backend: PHP service (Laravel framework)
 - Frontend: Vue.js
-- Database: MySQL or PostgreSQL
 - Deployment: Kubernetes (Minikube for local setup)
 - CI/CD: GitHub Actions
 
@@ -45,7 +44,6 @@ The project is structured as follows:
    cp .env.example .env
    composer install
    php artisan key:generate
-   php artisan migrate --seed
    ```
 
 3. Set up the frontend:
@@ -92,7 +90,7 @@ The project is structured as follows:
 6. Start Minikube Dashboard (Optional):
    ```
    // Start Minikube Dashboard to view Kubernetes Panel for pods and services. P.S. Use a new terminal.
-   minikube tunnel
+   minikube dashboard
    ```
 
 ## API Endpoints
